@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 商品圖設計室</title>
+    <link rel="stylesheet" href="/static/css/design_tool.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">AI 商品圖設計室</div>
+        <div class="nav-buttons">
+            <button class="nav-button">檔案</button>
+            <button class="nav-button">↩</button>
+            <button class="nav-button">↪</button>
+        </div>
+        <div class="points-container">
+            <div class="points">可用 Point 數：2.50</div>
+            <button class="add-points">+ 前往儲值</button>
+            <button class="check-points">查看 Point 紀錄</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-item">
+                <div>🖼️</div>
+                <div class="sidebar-item-text">商品圖</div>
+            </div>
+            <div class="sidebar-item">
+                <div>👤</div>
+                <div class="sidebar-item-text">我的</div>
+            </div>
+            <div class="sidebar-item">
+                <div>📝</div>
+                <div class="sidebar-item-text">生成紀錄</div>
+            </div>
+            <div class="sidebar-item" style="margin-top: auto;">
+                <div>ℹ️</div>
+                <div class="sidebar-item-text">免責聲明</div>
+            </div>
+        </div>
+        
+        <div class="tools-panel">
+            <div class="tools-header">
+                <span>🔧</span>
+                <span class="tools-title">樣式</span>
+            </div>
+            
+            <div class="dimension-options">
+                <div class="dimension-grid">
+                    <div class="dimension-item">|— 50 cm —|</div>
+                    <div class="dimension-item">|← 50 cm →|</div>
+                    <div class="dimension-item">|-- 50 cm --|</div>
+                    <div class="dimension-item">|----- 50 cm -----|</div>
+                    <div class="dimension-item">□— 50 cm —□</div>
+                    <div class="dimension-item">←— 50 cm —→</div>
+                    <div class="dimension-item">
+                        <div style="display: flex; align-items: center;">
+                            <div style="border-bottom: 1px dotted #000; width: 60px;"></div>
+                            <div style="background: #333; color: #fff; padding: 2px 5px; font-size: 12px; margin: 0 3px;">meitu</div>
+                        </div>
+                    </div>
+                    <div class="dimension-item">
+                        <div style="display: flex; align-items: center;">
+                            <div style="border-bottom: 1px solid #f00; width: 30px;"></div>
+                            <div style="color: #f00; padding: 2px 5px; font-size: 12px;">meitu</div>
+                        </div>
+                    </div>
+                    <div class="dimension-item">
+                        <div style="display: flex; align-items: center;">
+                            <div style="border-bottom: 1px solid #00f; width: 30px;"></div>
+                            <div style="color: #00f; padding: 2px 5px; font-size: 12px;">meitu</div>
+                        </div>
+                    </div>
+                    <div class="dimension-item">
+                        <div style="display: flex; align-items: center;">
+                            <div style="border-bottom: 1px dashed #ccc; width: 60px;"></div>
+                            <div style="color: #ccc; padding: 2px 5px; font-size: 12px;">meitu</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-title">⚙️ 設定</div>
+                
+                <div class="settings-tabs">
+                    <div class="settings-tab active">類型</div>
+                    <div class="settings-tab">數值</div>
+                    <div class="settings-tab">自定義</div>
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">數值</label>
+                    <input type="text" class="setting-input" value="50">
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">單位</label>
+                    <select class="setting-select">
+                        <option>cm</option>
+                        <option>mm</option>
+                        <option>inch</option>
+                    </select>
+                </div>
+                
+                <div class="setting-item">
+                    <label class="setting-label">位置</label>
+                    <select class="setting-select">
+                        <option>線條中間</option>
+                        <option>線條上方</option>
+                        <option>線條下方</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <div class="toolbar">
+                <div class="tool-group">
+                    <button class="tool-btn pen-btn active" data-tool="pen"><i class="fas fa-pen"></i> 筆</button>
+                    <button class="tool-btn line-btn" data-tool="line"><i class="fas fa-slash"></i> 線條</button>
+                    <button class="tool-btn arrow-btn" data-tool="arrow"><i class="fas fa-long-arrow-alt-right"></i> 箭頭</button>
+                    <button class="tool-btn ruler-btn" data-tool="ruler"><i class="fas fa-ruler"></i> 尺規</button>
+                </div>
+                
+                <div class="tool-group">
+                    <input type="color" class="color-picker" value="#FF0000">
+                </div>
+                
+                <div class="tool-group">
+                    <button class="tool-btn upload-btn" id="upload-button"><i class="fas fa-upload"></i> 上傳</button>
+                    <button class="tool-btn save-btn"><i class="fas fa-save"></i> 保存</button>
+                    <button class="tool-btn clear-btn"><i class="fas fa-trash"></i> 清除</button>
+                </div>
+            </div>
+            
+            <div class="canvas">
+                <div id="upload-placeholder" class="upload-placeholder">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">點擊上傳按鈕添加圖像</div>
+                    <input type="file" id="direct-file-input" accept="image/*" style="display:none;">
+                    <button id="upload-button-large" class="btn upload-btn">選擇圖片</button>
+                </div>
+                <div id="message-container" class="message-container"></div>
+                <!-- Canvas will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/static/js/design_tool.js"></script>
+</body>
+</html>
