@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機器人知識庫 - AI 商品圖設計室</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/knowledge_base.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">AI 商品圖設計室</div>
+        <div class="nav-buttons">
+            <button class="nav-button">檔案</button>
+            <button class="nav-button">↩</button>
+            <button class="nav-button">↪</button>
+        </div>
+        <div class="points-container">
+            <div class="points">可用 Point 數：2.50</div>
+            <button class="add-points">+ 前往儲值</button>
+            <button class="check-points">查看 Point 紀錄</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-item" onclick="location.href='/'">
+                <div>🖼️</div>
+                <div class="sidebar-item-text">商品圖</div>
+            </div>
+            <div class="sidebar-item">
+                <div>👤</div>
+                <div class="sidebar-item-text">我的</div>
+            </div>
+            <div class="sidebar-item">
+                <div>📝</div>
+                <div class="sidebar-item-text">生成紀錄</div>
+            </div>
+            <div class="sidebar-item active" onclick="location.href='/knowledge_base'">
+                <div>🤖</div>
+                <div class="sidebar-item-text">機器人</div>
+            </div>
+            <div class="sidebar-item" style="margin-top: auto;">
+                <div>ℹ️</div>
+                <div class="sidebar-item-text">免責聲明</div>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="function-selector">
+                <div class="function-item active" data-section="build">
+                    <div class="function-icon"><img src="/static/images/upload_icon.svg" alt="建立新機器人知識庫"></div>
+                    <div class="function-name">建立機器人知識庫</div>
+                </div>
+                <div class="function-item" data-section="import">
+                    <div class="function-icon"><img src="/static/images/import_icon.svg" alt="匯入知識"></div>
+                    <div class="function-name">匯入知識</div>
+                </div>
+                <div class="function-item" data-section="query">
+                    <div class="function-icon"><img src="/static/images/query_icon.svg" alt="機器人測試"></div>
+                    <div class="function-name">機器人測試</div>
+                </div>
+                <div class="function-item" data-section="deploy">
+                    <div class="function-icon"><img src="/static/images/deploy_icon.svg" alt="機器人部署"></div>
+                    <div class="function-name">機器人部署</div>
+                </div>
+            </div>
+            
+            <div class="knowledge-main">
+                <div class="knowledge-title">
+                    <h1>機器人知識庫</h1>
+                </div>
+                
+                <div class="knowledge-info">
+                    <p class="info-text">結合最新 AI 技術 —— AIGC (人工智慧生成內容)，妥以需要輸入關於您商或商品的常見問題，就能輕鬆設置您的 AI Agent。</p>
+                    <p class="info-text">您在知識庫中導入的內容，會透過訓練機器人生成智能回覆，以幫助顧客快速解決疑惑，縮短客服人員的服務時間！<a href="#" class="text-link">前往教學文章</a></p>
+                </div>
+                
+                <div class="action-bar">
+                    <button class="upload-btn"><i class="fas fa-plus"></i> 新增知識庫文件</button>
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="搜尋檔案名稱">
+                        <div class="filter-select">
+                            <select>
+                                <option>所有狀態</option>
+                                <option>已匯入</option>
+                                <option>匯入中</option>
+                                <option>失敗</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="quota-info">
+                        <span>您還有 <strong>20,000</strong> / 20,000 可上傳字符數</span>
+                    </div>
+                </div>
+                
+                <div class="knowledge-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>排序</th>
+                                <th>檔案名稱</th>
+                                <th>狀態</th>
+                                <th>文件上傳時間 <i class="fas fa-sort"></i></th>
+                                <th>字數 <i class="fas fa-sort"></i></th>
+                                <th>刪除</th>
+                            </tr>
+                        </thead>
+                        <tbody id="knowledge-files-list">
+                            <!-- 檔案列表將由JavaScript動態生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 上傳文件對話框 -->
+                <div id="upload-dialog" class="dialog-overlay">
+                    <div class="dialog-content">
+                        <div class="dialog-header">
+                            <h3>上傳知識庫文件</h3>
+                            <button class="close-dialog"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="dialog-body">
+                            <div class="upload-info">
+                                <p>請選擇要上傳的檔案：</p>
+                                <ul>
+                                    <li>支援的檔案格式：.xlsx, .xls, .csv, .txt, .pdf, .doc, .docx</li>
+                                    <li>上傳檔案大小不得超過 20MB</li>
+                                    <li>檔案內容必須為文字，不支援圖像內容解析</li>
+                                </ul>
+                            </div>
+                            <div class="upload-area" id="drop-area">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>拖拽檔案到此處或點擊選擇檔案</p>
+                                <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.txt,.pdf,.doc,.docx" style="display:none;">
+                                <button class="select-file-btn">選擇檔案</button>
+                            </div>
+                            <div class="selected-file" style="display:none;">
+                                <p>已選擇檔案：<span id="file-name"></span></p>
+                            </div>
+                        </div>
+                        <div class="dialog-footer">
+                            <button class="cancel-btn">取消</button>
+                            <button class="upload-submit-btn" disabled>上傳</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 確認刪除對話框 -->
+                <div id="delete-dialog" class="dialog-overlay">
+                    <div class="dialog-content">
+                        <div class="dialog-header">
+                            <h3>確認刪除</h3>
+                            <button class="close-dialog"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="dialog-body">
+                            <p>確定要刪除這個知識庫文件嗎？此操作無法撤銷。</p>
+                        </div>
+                        <div class="dialog-footer">
+                            <button class="cancel-btn">取消</button>
+                            <button class="confirm-delete-btn">確認刪除</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/knowledge_base.js"></script>
+</body>
+</html>
