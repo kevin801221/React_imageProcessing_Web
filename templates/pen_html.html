@@ -123,22 +123,92 @@
         </div>
         
         <div class="canvas-container">
+            <!-- 工具欄 -->
             <div class="toolbar">
                 <div class="tool-group">
                     <button class="tool-btn pen-btn active" data-tool="pen"><i class="fas fa-pen"></i> 筆</button>
                     <button class="tool-btn line-btn" data-tool="line"><i class="fas fa-slash"></i> 線條</button>
                     <button class="tool-btn arrow-btn" data-tool="arrow"><i class="fas fa-long-arrow-alt-right"></i> 箭頭</button>
                     <button class="tool-btn ruler-btn" data-tool="ruler"><i class="fas fa-ruler"></i> 尺規</button>
+                    <button class="tool-btn text-btn" data-tool="text"><i class="fas fa-font"></i> 文字</button>
+                </div>
+                
+                <div class="tool-group">
+                    <button class="tool-btn flip-h-btn" id="flip-horizontal"><i class="fas fa-arrows-alt-h"></i> 水平翻轉</button>
+                    <button class="tool-btn flip-v-btn" id="flip-vertical"><i class="fas fa-arrows-alt-v"></i> 垂直翻轉</button>
+                    <button class="tool-btn reset-btn" id="reset-image"><i class="fas fa-undo"></i> 重置</button>
                 </div>
                 
                 <div class="tool-group">
                     <input type="color" class="color-picker" value="#FF0000">
-                </div>
-                
-                <div class="tool-group">
                     <button class="tool-btn upload-btn" id="upload-button"><i class="fas fa-upload"></i> 上傳</button>
                     <button class="tool-btn save-btn"><i class="fas fa-save"></i> 保存</button>
                     <button class="tool-btn clear-btn"><i class="fas fa-trash"></i> 清除</button>
+                </div>
+            </div>
+            
+            <!-- 圖像調整面板 -->
+            <div class="image-adjustments-panel">
+                <div class="adjustment-item">
+                    <label for="brightness-slider">亮度</label>
+                    <input type="range" id="brightness-slider" class="adjustment-slider" min="-100" max="100" value="0">
+                    <span class="slider-value">0</span>
+                </div>
+                <div class="adjustment-item">
+                    <label for="contrast-slider">對比度</label>
+                    <input type="range" id="contrast-slider" class="adjustment-slider" min="-100" max="100" value="0">
+                    <span class="slider-value">0</span>
+                </div>
+                <div class="adjustment-item">
+                    <label for="shadow-slider">陰影</label>
+                    <input type="range" id="shadow-slider" class="adjustment-slider" min="-100" max="100" value="0">
+                    <span class="slider-value">0</span>
+                </div>
+                <div class="adjustment-item">
+                    <label for="saturation-slider">飽和度</label>
+                    <input type="range" id="saturation-slider" class="adjustment-slider" min="-100" max="100" value="0">
+                    <span class="slider-value">0</span>
+                </div>
+                <div class="adjustment-item">
+                    <label for="clarity-slider">清晰度</label>
+                    <input type="range" id="clarity-slider" class="adjustment-slider" min="-100" max="100" value="0">
+                    <span class="slider-value">0</span>
+                </div>
+                <div class="adjustment-item">
+                    <label for="whitebalance-slider">白平衡</label>
+                    <input type="range" id="whitebalance-slider" class="adjustment-slider" min="-100" max="100" value="0">
+                    <span class="slider-value">0</span>
+                </div>
+            </div>
+
+            <!-- 濾鏡效果選擇區 -->
+            <div class="filter-selection">
+                <h3>濾鏡效果</h3>
+                <div class="filter-grid">
+                    <div class="filter-item" data-filter="none">
+                        <img src="" alt="無濾鏡" id="filter-none">
+                        <span>無</span>
+                    </div>
+                    <div class="filter-item" data-filter="grayscale">
+                        <img src="" alt="黑白" id="filter-grayscale">
+                        <span>黑白</span>
+                    </div>
+                    <div class="filter-item" data-filter="sepia">
+                        <img src="" alt="褐色" id="filter-sepia">
+                        <span>褐色</span>
+                    </div>
+                    <div class="filter-item" data-filter="vintage">
+                        <img src="" alt="復古" id="filter-vintage">
+                        <span>復古</span>
+                    </div>
+                    <div class="filter-item" data-filter="cold">
+                        <img src="" alt="冷色調" id="filter-cold">
+                        <span>冷色調</span>
+                    </div>
+                    <div class="filter-item" data-filter="warm">
+                        <img src="" alt="暖色調" id="filter-warm">
+                        <span>暖色調</span>
+                    </div>
                 </div>
             </div>
             
@@ -151,6 +221,57 @@
                 </div>
                 <div id="message-container" class="message-container"></div>
                 <!-- Canvas will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 文字編輯對話框 - 放在主容器外 -->
+    <div id="text-edit-dialog" class="dialog-overlay">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3>添加文字</h3>
+                <button class="close-dialog"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="dialog-body">
+                <div class="text-edit-container">
+                    <textarea id="text-input" placeholder="請輸入文字內容..."></textarea>
+                    <div class="text-style-options">
+                        <div class="style-option">
+                            <label>字體</label>
+                            <select id="font-family">
+                                <option value="Arial">Arial</option>
+                                <option value="Microsoft JhengHei">微軟正黑體</option>
+                                <option value="SimSun">宋體</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier New">Courier New</option>
+                            </select>
+                        </div>
+                        <div class="style-option">
+                            <label>大小</label>
+                            <input type="number" id="font-size" min="8" max="72" value="24">
+                        </div>
+                        <div class="style-option">
+                            <label>顏色</label>
+                            <input type="color" id="text-color" value="#000000">
+                        </div>
+                        <div class="style-option">
+                            <label>粗體</label>
+                            <input type="checkbox" id="bold-text">
+                        </div>
+                        <div class="style-option">
+                            <label>斜體</label>
+                            <input type="checkbox" id="italic-text">
+                        </div>
+                        <div class="style-option">
+                            <label>底線</label>
+                            <input type="checkbox" id="underline-text">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="cancel-btn">取消</button>
+                <button class="add-text-btn">添加文字</button>
             </div>
         </div>
     </div>
