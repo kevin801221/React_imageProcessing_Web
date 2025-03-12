@@ -540,5 +540,74 @@ def placeholder_image(width, height):
     
     return send_from_directory(os.path.dirname(placeholder_path), os.path.basename(placeholder_path))
 
+# Add this to your app.py file
+
+@app.route('/product_copy')
+def product_copy():
+    """商品文案生成頁面"""
+    return render_template('product_copy.html')
+
+@app.route('/api/chat', methods=['POST'])
+def chat_api():
+    """GPT API 聊天接口"""
+    try:
+        data = request.json
+        messages = data.get('messages', [])
+        model = data.get('model', 'gpt-3.5-turbo')
+        
+        if not messages:
+            return jsonify({'success': False, 'message': '缺少消息內容'})
+        
+        # 這裡需要調用 OpenAI API 或其他 LLM API
+        # 以下代碼僅為示例，需要替換為實際的 API 調用
+        
+        # import openai
+        # openai.api_key = 'your-api-key'  # 請替換為您的 API 密鑰
+        # 
+        # response = openai.ChatCompletion.create(
+        #     model=model,
+        #     messages=messages,
+        #     temperature=0.7,
+        #     max_tokens=1500
+        # )
+        # 
+        # ai_response = response.choices[0].message.content
+        
+        # 目前使用模擬回應進行測試
+        last_message = messages[-1]['content']
+        
+        # 簡單的回應邏輯
+        if '商品文案' in last_message:
+            ai_response = """# 為您的商品生成的銷售文案
+
+## 標題
+✨ 革新生活品質，讓您的每一天都與眾不同！
+
+## 賣點
+1. **頂級材質**：精選高品質原料，耐用持久
+2. **人體工學設計**：貼合使用習慣，舒適不費力
+3. **多功能整合**：一機多用，滿足多樣需求
+4. **智能操控**：簡單直覺的操作界面，老少咸宜
+
+## 產品描述
+這款產品是您日常生活的完美助手，採用頂級環保材質精心打造，不僅品質卓越，更兼具時尚美感。人體工學設計讓您使用時倍感舒適，大幅減輕疲勞感。多功能整合讓這款產品能夠適應各種場景需求，為您的生活增添便利與樂趣。直覺式操作界面讓任何年齡層的用戶都能輕鬆上手，徹底釋放您的創造力與生產力。
+
+## 行動呼籲
+🔥 限時優惠中！立即下單享9折優惠，再送精美禮品乙份，數量有限，手慢無！"""
+        else:
+            ai_response = "您好！我是您的 AI 文案助手，請告訴我您需要什麼樣的幫助，我會盡力為您服務。"
+        
+        # 計算點數消耗（示例）
+        points_used = 0.05
+        
+        return jsonify({
+            'success': True,
+            'response': ai_response,
+            'points_used': points_used
+        })
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'處理請求時發生錯誤: {str(e)}'})
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

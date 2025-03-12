@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品文案生成 - AI 商品圖設計室</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/chat.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">AI 商品圖設計室</div>
+        <div class="nav-buttons">
+            <button class="nav-button">檔案</button>
+            <button class="nav-button">↩</button>
+            <button class="nav-button">↪</button>
+        </div>
+        <div class="points-container">
+            <div class="points">可用 Point 數：2.50</div>
+            <button class="add-points">+ 前往儲值</button>
+            <button class="check-points">查看 Point 紀錄</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-item" onclick="location.href='/'">
+                <div>🖼️</div>
+                <div class="sidebar-item-text">商品圖</div>
+            </div>
+            <div class="sidebar-item">
+                <div>👤</div>
+                <div class="sidebar-item-text">我的</div>
+            </div>
+            <div class="sidebar-item">
+                <div>📝</div>
+                <div class="sidebar-item-text">生成紀錄</div>
+            </div>
+            <div class="sidebar-item active" onclick="location.href='/product_copy'">
+                <div>✏️</div>
+                <div class="sidebar-item-text">文案生成</div>
+            </div>
+            <div class="sidebar-item" onclick="location.href='/knowledge_base'">
+                <div>🤖</div>
+                <div class="sidebar-item-text">機器人</div>
+            </div>
+            <div class="sidebar-item" style="margin-top: auto;">
+                <div>ℹ️</div>
+                <div class="sidebar-item-text">免責聲明</div>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="function-selector">
+                <div class="function-item active" data-section="copywriting">
+                    <div class="function-icon"><img src="/static/images/copywriting_icon.svg" alt="商品文案生成"></div>
+                    <div class="function-name">商品文案生成</div>
+                </div>
+                <div class="function-item" data-section="headline">
+                    <div class="function-icon"><img src="/static/images/headline_icon.svg" alt="標題生成"></div>
+                    <div class="function-name">標題生成</div>
+                </div>
+                <div class="function-item" data-section="description">
+                    <div class="function-icon"><img src="/static/images/description_icon.svg" alt="描述生成"></div>
+                    <div class="function-name">描述生成</div>
+                </div>
+                <div class="function-item" data-section="history">
+                    <div class="function-icon"><img src="/static/images/history_icon.svg" alt="生成記錄"></div>
+                    <div class="function-name">生成記錄</div>
+                </div>
+            </div>
+            
+            <div class="chat-main">
+                <div class="chat-title">
+                    <h1>商品文案生成</h1>
+                </div>
+                
+                <div class="chat-info">
+                    <p class="info-text">利用先進的 AI 技術，只需輸入您的商品資訊，即可生成專業吸引人的商品文案。</p>
+                    <p class="info-text">可以針對不同平台、不同客群量身定制，幫您節省時間並提高轉化率！<a href="#" class="text-link">前往教學文章</a></p>
+                </div>
+                
+                <div class="product-input-section">
+                    <h2>商品基本資訊</h2>
+                    <div class="form-group">
+                        <label for="product-name">商品名稱</label>
+                        <input type="text" id="product-name" class="form-control" placeholder="輸入商品名稱">
+                    </div>
+                    <div class="form-group">
+                        <label for="product-category">商品類別</label>
+                        <select id="product-category" class="form-control">
+                            <option value="">請選擇類別</option>
+                            <option value="clothes">服飾</option>
+                            <option value="electronics">電子產品</option>
+                            <option value="food">食品</option>
+                            <option value="beauty">美妝</option>
+                            <option value="home">家居</option>
+                            <option value="sports">運動健身</option>
+                            <option value="others">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-features">商品特點</label>
+                        <textarea id="product-features" class="form-control" rows="3" placeholder="輸入商品的主要特點，用逗號分隔"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="target-audience">目標客群</label>
+                        <input type="text" id="target-audience" class="form-control" placeholder="描述您的目標客戶（年齡、性別、興趣等）">
+                    </div>
+                    <div class="form-group">
+                        <label for="platform">銷售平台</label>
+                        <select id="platform" class="form-control">
+                            <option value="">請選擇平台</option>
+                            <option value="shopee">蝦皮</option>
+                            <option value="momo">momo</option>
+                            <option value="pchome">PChome</option>
+                            <option value="taobao">淘寶</option>
+                            <option value="shopify">Shopify</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="others">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tone">文案風格</label>
+                        <select id="tone" class="form-control">
+                            <option value="">請選擇風格</option>
+                            <option value="professional">專業正式</option>
+                            <option value="casual">輕鬆隨意</option>
+                            <option value="humorous">幽默風趣</option>
+                            <option value="persuasive">說服力強</option>
+                            <option value="emotional">感性訴求</option>
+                            <option value="minimalist">簡約直接</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="additional-info">其他補充資訊</label>
+                        <textarea id="additional-info" class="form-control" rows="3" placeholder="有任何其他想告訴 AI 的資訊，例如優惠活動、配送方式等"></textarea>
+                    </div>
+                    <button id="generate-button" class="generate-btn">
+                        <i class="fas fa-magic"></i> 開始生成文案
+                    </button>
+                </div>
+                
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message-container system">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <p>您好！我是您的 AI 文案助手，可以幫您生成專業的商品文案。請先填寫左側的商品資訊表單，然後點擊「開始生成文案」按鈕，我會為您創建吸引人的商品描述。</p>
+                                <p>您也可以在對話框中直接輸入指令，例如「幫我優化這段文案」、「用更吸引人的方式描述這個特點」等。</p>
+                            </div>
+                        </div>
+                        <!-- 聊天信息將在這裡動態生成 -->
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <textarea id="chat-input" placeholder="輸入訊息或指令..."></textarea>
+                            <button id="send-button" class="send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="chat-actions">
+                            <button class="action-btn" id="copy-btn" title="複製全部文案">
+                                <i class="fas fa-copy"></i> 複製
+                            </button>
+                            <button class="action-btn" id="save-btn" title="儲存為模板">
+                                <i class="fas fa-save"></i> 儲存
+                            </button>
+                            <button class="action-btn" id="clear-btn" title="清空對話">
+                                <i class="fas fa-trash"></i> 清空
+                            </button>
+                        </div>
+                        <div class="point-usage">
+                            <p>估計消耗點數: <span id="estimated-points">0.05</span> Points</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 儲存模板對話框 -->
+    <div id="save-template-dialog" class="dialog-overlay">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3>儲存為模板</h3>
+                <button class="close-dialog"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="dialog-body">
+                <div class="form-group">
+                    <label for="template-name">模板名稱</label>
+                    <input type="text" id="template-name" class="form-control" placeholder="輸入模板名稱">
+                </div>
+                <div class="form-group">
+                    <label for="template-description">模板描述</label>
+                    <textarea id="template-description" class="form-control" rows="3" placeholder="簡短描述這個模板的用途"></textarea>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="cancel-btn">取消</button>
+                <button class="save-template-btn">儲存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/product_copy.js"></script>
+</body>
+</html>
