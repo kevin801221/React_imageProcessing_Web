@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FaImage, FaRedo, FaSave, FaDownload, FaUndo, FaCrop, FaAdjust } from 'react-icons/fa';
+import { FaImage, FaRedo, FaSave, FaDownload, FaUndo, FaCrop, FaAdjust, FaCut } from 'react-icons/fa';
 import { MdOutlineColorLens, MdSettings } from 'react-icons/md';
 import ImageCanvas from '../components/ImageEditor/ImageCanvas';
 import FilterControl from '../components/ImageEditor/FilterControl';
 import FilterGallery from '../components/ImageEditor/FilterGallery';
+import BackgroundRemover from '../components/ImageEditor/BackgroundRemover';
 import './ImageEditorPage.css';
 
 const ImageEditorPage = () => {
@@ -12,6 +13,8 @@ const ImageEditorPage = () => {
   const [loading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('比例');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processedImage, setProcessedImage] = useState(null);
   const [filterParams, setFilterParams] = useState({
     brightness: 0,
     contrast: 0,
@@ -116,17 +119,23 @@ const ImageEditorPage = () => {
     if (!image) return;
     
     try {
-      // Since we don't have direct access to the canvas in ImageCanvas component,
-      // we'll just download the original image for now
-      // In a real implementation, you would need to get the canvas data from the ImageCanvas component
+      // Use the processed image if available, otherwise use the original image
+      const imageToDownload = processedImage || image;
+      
       const a = document.createElement('a');
-      a.href = image;
+      a.href = imageToDownload;
       a.download = 'edited-image.png';
       a.click();
     } catch (err) {
       console.error('Error downloading image:', err);
       setError('下載圖片時發生錯誤');
     }
+  };
+  
+  const handleProcessedImage = (processedImageData) => {
+    setProcessedImage(processedImageData);
+    // Update the displayed image
+    setImage(processedImageData);
   };
 
   const renderFilterControls = () => {
@@ -229,6 +238,15 @@ const ImageEditorPage = () => {
             </div>
           </div>
         );
+      case '背景移除':
+        return (
+          <BackgroundRemover 
+            originalImage={image}
+            onProcessedImage={handleProcessedImage}
+            isProcessing={isProcessing}
+            setIsProcessing={setIsProcessing}
+          />
+        );
       default:
         return null;
     }
@@ -294,6 +312,13 @@ const ImageEditorPage = () => {
               >
                 <FaAdjust />
                 <span>調整</span>
+              </button>
+              <button 
+                className={`tab-button ${activeTab === '背景移除' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('背景移除')}
+              >
+                <FaCut />
+                <span>背景移除</span>
               </button>
             </div>
             
