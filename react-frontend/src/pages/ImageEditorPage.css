@@ -70,7 +70,7 @@
 
 .tab-button {
   flex: 1;
-  padding: 10px;
+  padding: 10px 5px;
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
@@ -80,6 +80,7 @@
   align-items: center;
   color: #777;
   transition: all 0.2s;
+  min-width: 50px;
 }
 
 .tab-button span {
