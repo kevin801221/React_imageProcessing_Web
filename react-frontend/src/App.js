@@ -15,6 +15,7 @@ import HomePage from './pages/HomePage';
 import KnowledgeBasePage from './pages/KnowledgeBasePage';
 import ProductCopyPage from './pages/ProductCopyPage';
 import ImageUnderstandingPage from './pages/ImageUnderstandingPage';
+import ImageEditorPage from './pages/ImageEditorPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -33,6 +34,7 @@ function App() {
               <Route path="knowledge-base" element={<KnowledgeBasePage />} />
               <Route path="product-copy" element={<ProductCopyPage />} />
               <Route path="image-understanding" element={<ImageUnderstandingPage />} />
+              <Route path="image-editor" element={<ImageEditorPage />} />
               <Route path="user" element={<ProtectedRoute><UserProfilePage /></ProtectedRoute>} />
               <Route path="settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             </Route>

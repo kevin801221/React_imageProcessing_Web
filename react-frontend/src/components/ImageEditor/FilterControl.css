@@ -1,0 +1,26 @@
+.filter-control {
+  margin-bottom: 15px;
+}
+
+.filter-control label {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+  font-size: 14px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+}
+
+.slider-container input[type="range"] {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.slider-value {
+  width: 30px;
+  text-align: right;
+  color: #777;
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaImage, FaUser, FaClipboard, FaRobot, FaCog, FaInfoCircle, FaFileAlt, FaEye } from 'react-icons/fa';
+import { FaImage, FaUser, FaClipboard, FaRobot, FaCog, FaInfoCircle, FaFileAlt, FaEye, FaEdit } from 'react-icons/fa';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -19,6 +19,11 @@ const Sidebar = () => {
       <NavLink to="/image-understanding" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
         <div><FaEye /></div>
         <div className="sidebar-item-text">圖像理解</div>
+      </NavLink>
+      
+      <NavLink to="/image-editor" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
+        <div><FaEdit /></div>
+        <div className="sidebar-item-text">圖片編輯</div>
       </NavLink>
       
       <NavLink to="/knowledge-base" className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}>
