@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設置 - Casper+</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/settings.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">Casper+</div>
+            </div>
+            <div class="sidebar-item" onclick="location.href='/'">
+                <div>🏠</div>
+                <div class="sidebar-item-text">首頁</div>
+            </div>
+            <div class="sidebar-item" onclick="location.href='/product_copy'">
+                <div>✏️</div>
+                <div class="sidebar-item-text">文案生成</div>
+            </div>
+            <div class="sidebar-item" onclick="location.href='/knowledge_base'">
+                <div>🤖</div>
+                <div class="sidebar-item-text">機器人</div>
+            </div>
+            <div class="sidebar-item active" onclick="location.href='/settings'">
+                <div>⚙️</div>
+                <div class="sidebar-item-text">設置</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="settings-header">
+                <h1>系統設置</h1>
+                <p>在這裡管理您的 API 密鑰和應用程序偏好設置</p>
+            </div>
+            
+            <div class="settings-container">
+                <div class="settings-section">
+                    <h2>API 密鑰</h2>
+                    <p class="settings-description">設置您的 API 密鑰以使用相應的 AI 服務</p>
+                    
+                    <div class="settings-item">
+                        <label for="openai-api-key">OpenAI API 密鑰</label>
+                        <div class="api-key-input">
+                            <input type="password" id="openai-api-key" placeholder="輸入您的 OpenAI API 密鑰">
+                            <button class="toggle-visibility" data-target="openai-api-key">
+                                <img src="/static/images/eye_icon.svg" alt="顯示/隱藏">
+                            </button>
+                        </div>
+                        <p class="input-description">用於 GPT-3.5 和 GPT-4 模型</p>
+                    </div>
+                    
+                    <div class="settings-item">
+                        <label for="gpt4o-api-key">GPT-4o API 密鑰</label>
+                        <div class="api-key-input">
+                            <input type="password" id="gpt4o-api-key" placeholder="輸入您的 GPT-4o API 密鑰">
+                            <button class="toggle-visibility" data-target="gpt4o-api-key">
+                                <img src="/static/images/eye_icon.svg" alt="顯示/隱藏">
+                            </button>
+                        </div>
+                        <p class="input-description">用於圖片理解和多模態功能</p>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h2>偏好設置</h2>
+                    <p class="settings-description">自定義應用程序行為</p>
+                    
+                    <div class="settings-item">
+                        <label for="default-model">默認模型</label>
+                        <select id="default-model">
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="gpt-4o" selected>GPT-4o</option>
+                        </select>
+                        <p class="input-description">選擇默認使用的 AI 模型</p>
+                    </div>
+                    
+                    <div class="settings-item checkbox-item">
+                        <label for="auto-save">
+                            <input type="checkbox" id="auto-save" checked>
+                            <span>自動保存生成的內容</span>
+                        </label>
+                        <p class="input-description">自動保存生成的文案和分析結果</p>
+                    </div>
+                </div>
+                
+                <div class="settings-actions">
+                    <button id="save-settings" class="primary-button">保存設置</button>
+                    <button id="reset-settings" class="secondary-button">重置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">
+        <div class="notification-content">
+            <span id="notification-message"></span>
+        </div>
+    </div>
+    
+    <script src="/static/js/settings.js"></script>
+</body>
+</html>

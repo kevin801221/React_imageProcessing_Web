@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圖片理解 - AI 商品圖設計室</title>
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/chat.css">
+    <link rel="stylesheet" href="/static/css/image_understanding.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">AI 商品圖設計室</div>
+        <div class="nav-buttons">
+            <button class="nav-button">檔案</button>
+            <button class="nav-button">↩</button>
+            <button class="nav-button">↪</button>
+        </div>
+        <div class="points-container">
+            <div class="points">可用 Point 數：2.50</div>
+            <button class="add-points">+ 前往儲值</button>
+            <button class="check-points">查看 Point 紀錄</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-item" onclick="location.href='/'">
+                <div>🖼️</div>
+                <div class="sidebar-item-text">商品圖</div>
+            </div>
+            <div class="sidebar-item">
+                <div>👤</div>
+                <div class="sidebar-item-text">我的</div>
+            </div>
+            <div class="sidebar-item">
+                <div>📝</div>
+                <div class="sidebar-item-text">生成紀錄</div>
+            </div>
+            <div class="sidebar-item" onclick="location.href='/product_copy'">
+                <div>✏️</div>
+                <div class="sidebar-item-text">文案生成</div>
+            </div>
+            <div class="sidebar-item active" onclick="location.href='/knowledge_base'">
+                <div>🤖</div>
+                <div class="sidebar-item-text">機器人</div>
+            </div>
+            <div class="sidebar-item" onclick="location.href='/settings'">
+                <div>⚙️</div>
+                <div class="sidebar-item-text">設置</div>
+            </div>
+            <div class="sidebar-item" style="margin-top: auto;">
+                <div>ℹ️</div>
+                <div class="sidebar-item-text">免責聲明</div>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="function-selector">
+                <div class="function-item" data-section="build" onclick="location.href='/knowledge_base'">
+                    <div class="function-icon"><img src="/static/images/upload_icon.svg" alt="建立新機器人知識庫"></div>
+                    <div class="function-name">建立機器人知識庫</div>
+                </div>
+                <div class="function-item" data-section="import" onclick="location.href='/knowledge_base'">
+                    <div class="function-icon"><img src="/static/images/import_icon.svg" alt="匯入知識"></div>
+                    <div class="function-name">匯入知識</div>
+                </div>
+                <div class="function-item" data-section="query" onclick="location.href='/knowledge_base'">
+                    <div class="function-icon"><img src="/static/images/query_icon.svg" alt="機器人測試"></div>
+                    <div class="function-name">機器人測試</div>
+                </div>
+                <div class="function-item active" data-section="image_understanding">
+                    <div class="function-icon"><img src="/static/images/image_understanding_icon.svg" alt="圖片理解"></div>
+                    <div class="function-name">圖片理解</div>
+                </div>
+            </div>
+            
+            <div class="image-understanding-main">
+                <div class="image-understanding-title">
+                    <h1>圖片理解</h1>
+                </div>
+                
+                <div class="image-understanding-info">
+                    <p class="info-text">利用先進的 GPT-4o 多模態模型，上傳商品圖片，AI 將自動分析圖片內容並生成相關商品文案。</p>
+                    <p class="info-text">系統會自動識別商品特點、風格和賣點，為您生成專業吸引人的商品描述！<a href="#" class="text-link">前往教學文章</a></p>
+                </div>
+                
+                <div class="image-understanding-container">
+                    <div class="image-upload-section">
+                        <h2>上傳商品圖片</h2>
+                        <div class="upload-area" id="upload-area">
+                            <div class="upload-placeholder" id="upload-placeholder">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>點擊或拖曳圖片到此處</p>
+                                <p class="upload-hint">支援 JPG、PNG 格式，最大 5MB</p>
+                            </div>
+                            <img id="preview-image" class="preview-image" style="display: none;">
+                            <input type="file" id="file-input" accept="image/jpeg, image/png" style="display: none;">
+                        </div>
+                        <div class="upload-actions">
+                            <button id="upload-btn" class="primary-btn"><i class="fas fa-upload"></i> 上傳圖片</button>
+                            <button id="clear-btn" class="secondary-btn" style="display: none;"><i class="fas fa-trash"></i> 清除</button>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h2>圖片分析結果</h2>
+                        <div class="analysis-container" id="analysis-container">
+                            <div class="analysis-placeholder" id="analysis-placeholder">
+                                <i class="fas fa-image"></i>
+                                <p>請上傳圖片進行分析</p>
+                            </div>
+                            <div class="analysis-content" id="analysis-content" style="display: none;">
+                                <div class="analysis-loading" id="analysis-loading" style="display: none;">
+                                    <div class="spinner"></div>
+                                    <p>正在分析圖片，請稍候...</p>
+                                </div>
+                                <div class="analysis-result" id="analysis-result">
+                                    <!-- 分析結果將在這裡顯示 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="generated-copy-section">
+                    <h2>生成的商品文案</h2>
+                    <div class="generated-copy-container">
+                        <div class="copy-placeholder" id="copy-placeholder">
+                            <i class="fas fa-file-alt"></i>
+                            <p>分析完成後將自動生成商品文案</p>
+                        </div>
+                        <div class="copy-content" id="copy-content" style="display: none;">
+                            <!-- 生成的文案將在這裡顯示 -->
+                        </div>
+                    </div>
+                    <div class="copy-actions" style="display: none;" id="copy-actions">
+                        <button id="copy-btn" class="primary-btn"><i class="fas fa-copy"></i> 複製文案</button>
+                        <button id="regenerate-btn" class="secondary-btn"><i class="fas fa-sync"></i> 重新生成</button>
+                        <button id="save-btn" class="secondary-btn"><i class="fas fa-save"></i> 儲存模板</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 儲存模板對話框 -->
+    <div id="save-template-dialog" class="dialog-overlay">
+        <div class="dialog-content">
+            <div class="dialog-header">
+                <h3>儲存為模板</h3>
+                <button class="close-dialog"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="dialog-body">
+                <div class="form-group">
+                    <label for="template-name">模板名稱</label>
+                    <input type="text" id="template-name" class="form-control" placeholder="輸入模板名稱">
+                </div>
+                <div class="form-group">
+                    <label for="template-description">模板描述</label>
+                    <textarea id="template-description" class="form-control" placeholder="輸入模板描述"></textarea>
+                </div>
+            </div>
+            <div class="dialog-footer">
+                <button class="cancel-btn">取消</button>
+                <button class="save-template-btn">儲存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/static/js/common.js"></script>
+    <script src="/static/js/image_understanding.js"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+/* 設置頁面樣式 */
+.settings-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.settings-header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.settings-header p {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.settings-container {
+    padding: 20px 30px;
+}
+
+.settings-section {
+    margin-bottom: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.settings-section h2 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    color: #333;
+}
+
+.settings-description {
+    margin: 0 0 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.settings-item {
+    margin-bottom: 20px;
+}
+
+.settings-item:last-child {
+    margin-bottom: 0;
+}
+
+.settings-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.settings-item input[type="text"],
+.settings-item input[type="password"],
+.settings-item select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.settings-item input[type="text"]:focus,
+.settings-item input[type="password"]:focus,
+.settings-item select:focus {
+    border-color: #4a90e2;
+    outline: none;
+}
+
+.api-key-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.api-key-input input {
+    flex: 1;
+    padding-right: 40px;
+}
+
+.toggle-visibility {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.toggle-visibility img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+
+.toggle-visibility:hover img {
+    opacity: 1;
+}
+
+.input-description {
+    margin: 5px 0 0;
+    font-size: 12px;
+    color: #888;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: flex-start;
+}
+
+.checkbox-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.primary-button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.primary-button:hover {
+    background-color: #3a7bc8;
+}
+
+.secondary-button {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.secondary-button:hover {
+    background-color: #e8e8e8;
+}
+
+/* 通知樣式 */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    transform: translateX(150%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-content {
+    background-color: #4a90e2;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+}
+
+.notification.error .notification-content {
+    background-color: #e74c3c;
+}

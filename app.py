@@ -609,5 +609,171 @@ def chat_api():
     except Exception as e:
         return jsonify({'success': False, 'message': f'處理請求時發生錯誤: {str(e)}'})
 
+@app.route('/image_understanding')
+def image_understanding():
+    """圖片理解頁面"""
+    return render_template('image_understanding.html')
+
+@app.route('/api/image_understanding', methods=['POST'])
+def image_understanding_api():
+    """圖片理解 API"""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'message': '沒有找到文件'})
+        
+        file = request.files['file']
+        
+        if file.filename == '':
+            return jsonify({'success': False, 'message': '未選擇文件'})
+        
+        if file and allowed_file(file.filename):
+            try:
+                filename = secure_filename(file.filename)
+                timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                new_filename = f"{timestamp}_{filename}"
+                
+                # 保存文件
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+                file.save(file_path)
+                
+                # 檢查文件是否成功保存
+                if os.path.exists(file_path):
+                        # 加載設置並檢查 API key
+                    settings = load_settings()
+                    gpt4o_api_key = settings['api_keys'].get('gpt4o', '')
+                    
+                    if not gpt4o_api_key:
+                        return jsonify({'success': False, 'message': '請先設置 GPT-4o API key'})
+                    
+                    # 這裡應該調用 GPT-4o 的 API 來分析圖片
+                    # 目前我們使用模擬數據，但在實際實現中，我們會使用 API key 調用 GPT-4o
+                    
+                    # TODO: 實現真正的 GPT-4o API 調用
+                    # 以下為模擬代碼，實際實現時應替換為真正的 API 調用
+                    # import openai
+                    # openai.api_key = gpt4o_api_key
+                    # response = openai.chat.completions.create(
+                    #     model="gpt-4o",
+                    #     messages=[
+                    #         {"role": "system", "content": "你是一個專業的圖片分析和商品文案生成專家。"},
+                    #         {"role": "user", "content": [
+                    #             {"type": "text", "text": "請分析這張商品圖片，並生成吸引人的商品文案。"},
+                    #             {"type": "image_url", "image_url": {"url": f"file://{file_path}"}}
+                    #         ]}
+                    #     ]
+                    # )
+                    # ai_response = response.choices[0].message.content
+                    
+                    # 模擬分析結果
+                    analysis = {
+                        'description': '這是一張智能空氣淨化器的商品圖片，展示了產品的主要外觀和特點。',
+                        'features': [
+                            '高效 HEPA 濾網',
+                            '智能感應，自動調節',
+                            '靜音設計',
+                            '手機 App 遠程控制'
+                        ],
+                        'categories': [
+                            '家電', '空氣淨化器', '智能家居'
+                        ]
+                    }
+                    
+                    # 模擬生成的文案
+                    copy = """智能空氣淨化器 — 讓每一呼吸都純淨無憂
+
+您是否也心疼在空氣污染中成長的孩子？現在就來改善家人一個安全的呼吸環境？
+智能空氣淨化器，為你打造清新純淨的居家空間，讓您成為一條好爸！
+
+【商品特色】
+✅ 高效 HEPA 濾網
+過濾99.97%的PM2.5、花粉和過敏原，守護全家人的呼吸健康。
+
+✅ 智能感應，自動調節
+內建智能感應器，實時偵測空氣質量，自動調整淨化模式，省心又省力。
+
+✅ 靜音設計，安享好眠
+運轉噪音低至20分貝，安靜得讓你忘記它的存在，讓你和家人一夜好眠。
+
+✅ 手機App 遠程控制
+隨時隨地監控家中空氣質量，遠程開關機器，智能生活輕鬆可及。
+
+【限時優惠】
+🔥 限時8折優惠，原價5000元，現在只要4000元！
+🔥 加購替換濾網一組，讓你的淨化器持續高效運轉！"""
+                    
+                    # 模擬點數消耗
+                    points_used = 0.15
+                    
+                    return jsonify({
+                        'success': True,
+                        'file_path': f"/static/uploads/{new_filename}",
+                        'analysis': analysis,
+                        'copy': copy,
+                        'points_used': points_used
+                    })
+                else:
+                    return jsonify({'success': False, 'message': '文件保存失敗'})
+                    
+            except Exception as e:
+                return jsonify({'success': False, 'message': f'處理圖片時發生錯誤: {str(e)}'})
+        
+        return jsonify({'success': False, 'message': '不允許的文件類型'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'處理請求時發生錯誤: {str(e)}'})
+
+@app.route('/settings')
+def settings_page():
+    """設置頁面"""
+    return render_template('settings.html')
+
+@app.route('/api/settings', methods=['GET'])
+def get_settings():
+    """獲取設置"""
+    try:
+        settings = load_settings()
+        # 將 API key 標記為已設置狀態，而不是返回實際的 key
+        masked_settings = settings.copy()
+        
+        # 將 API key 遮蓋為星號
+        for key in masked_settings['api_keys']:
+            if masked_settings['api_keys'][key]:
+                masked_settings['api_keys'][key] = '********'
+        
+        return jsonify({
+            'success': True,
+            'settings': masked_settings
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'獲取設置時發生錯誤: {str(e)}'})
+
+@app.route('/api/settings', methods=['POST'])
+def update_settings():
+    """更新設置"""
+    try:
+        data = request.json
+        current_settings = load_settings()
+        
+        # 更新 API keys
+        if 'api_keys' in data:
+            for key, value in data['api_keys'].items():
+                # 只有在提供了非空的值且不是星號時才更新
+                if value and value != '********':
+                    current_settings['api_keys'][key] = value
+        
+        # 更新偏好設置
+        if 'preferences' in data:
+            for key, value in data['preferences'].items():
+                current_settings['preferences'][key] = value
+        
+        # 保存設置
+        if save_settings(current_settings):
+            return jsonify({'success': True, 'message': '設置已成功更新'})
+        else:
+            return jsonify({'success': False, 'message': '保存設置時發生錯誤'})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'更新設置時發生錯誤: {str(e)}'})
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
