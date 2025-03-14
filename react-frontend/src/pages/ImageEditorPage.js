@@ -1,13 +1,22 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, Suspense, lazy } from 'react';
 import { FaImage, FaRedo, FaSave, FaDownload, FaUndo, FaCrop, FaAdjust, FaCut } from 'react-icons/fa';
 import { MdOutlineColorLens, MdSettings } from 'react-icons/md';
-import ImageCanvas from '../components/ImageEditor/ImageCanvas';
-import FilterControl from '../components/ImageEditor/FilterControl';
-import FilterGallery from '../components/ImageEditor/FilterGallery';
-import BackgroundRemover from '../components/ImageEditor/BackgroundRemover';
+
+// Lazy load components for better performance
+const ImageCanvas = lazy(() => import('../components/ImageEditor/ImageCanvas'));
+const FilterControl = lazy(() => import('../components/ImageEditor/FilterControl'));
+const FilterGallery = lazy(() => import('../components/ImageEditor/FilterGallery'));
+const BackgroundRemover = lazy(() => import('../components/ImageEditor/BackgroundRemover'));
 import './ImageEditorPage.css';
 
 const ImageEditorPage = () => {
+  // Add a loading fallback component
+  const LoadingFallback = () => (
+    <div className="loading-fallback">
+      <div className="spinner"></div>
+      <p>載入中...</p>
+    </div>
+  );
   const [image, setImage] = useState(null);
   // We'll keep the loading state for future use
   const [loading] = useState(false);
@@ -137,6 +146,12 @@ const ImageEditorPage = () => {
     // Update the displayed image
     setImage(processedImageData);
   };
+
+  // Memoize the filter controls to prevent unnecessary re-renders
+  const memoizedFilterControls = useCallback(() => {
+    return renderFilterControls();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, filterParams, selectedFilter, processedImage, isProcessing]);
 
   const renderFilterControls = () => {
     switch (activeTab) {
@@ -323,7 +338,9 @@ const ImageEditorPage = () => {
             </div>
             
             <div className="sidebar-content">
-              {renderFilterControls()}
+              <Suspense fallback={<div className="loading-placeholder">載入控制項...</div>}>
+                {memoizedFilterControls()}
+              </Suspense>
             </div>
           </div>
           
@@ -356,14 +373,16 @@ const ImageEditorPage = () => {
                 </div>
                 <div className="canvas-container" style={{ transform: `scale(${zoomLevel / 100})` }}>
                   {image ? (
-                    <ImageCanvas 
-                      image={image}
-                      filterParams={filterParams}
-                      selectedFilter={selectedFilter}
-                      selectedLayout={selectedLayout}
-                      cornerRadius={filterParams.cornerRadius}
-                      transparency={filterParams.transparency}
-                    />
+                    <Suspense fallback={<LoadingFallback />}>
+                      <ImageCanvas 
+                        image={image}
+                        filterParams={filterParams}
+                        selectedFilter={selectedFilter}
+                        selectedLayout={selectedLayout}
+                        cornerRadius={filterParams.cornerRadius}
+                        transparency={filterParams.transparency}
+                      />
+                    </Suspense>
                   ) : (
                     <div className="empty-canvas"></div>
                   )}
@@ -386,15 +405,17 @@ const ImageEditorPage = () => {
           <div className="editor-sidebar right-sidebar">
             <div className="filter-gallery-container">
               <h3>濾鏡</h3>
-              <FilterGallery 
-                filters={[
-                  { id: '無', label: '原圖' },
-                  { id: '北歐', label: '北歐', previewClass: 'filter-nordic' },
-                  { id: '懷舊', label: '懷舊', previewClass: 'filter-vintage' }
-                ]}
-                selectedFilter={selectedFilter}
-                onSelectFilter={setSelectedFilter}
-              />
+              <Suspense fallback={<LoadingFallback />}>
+                <FilterGallery 
+                  filters={[
+                    { id: '無', label: '原圖' },
+                    { id: '北歐', label: '北歐', previewClass: 'filter-nordic' },
+                    { id: '懷舊', label: '懷舊', previewClass: 'filter-vintage' }
+                  ]}
+                  selectedFilter={selectedFilter}
+                  onSelectFilter={setSelectedFilter}
+                />
+              </Suspense>
             </div>
           </div>
         </div>

@@ -1,13 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './BackgroundRemover.css';
 
-const BackgroundRemover = ({ 
+// Using React.memo to prevent unnecessary re-renders
+const BackgroundRemover = React.memo(({ 
   originalImage, 
   onProcessedImage,
   isProcessing,
   setIsProcessing
 }) => {
-  const [maskCanvas, setMaskCanvas] = useState(null);
+  // We'll use this state to track the mask for potential future enhancements
+  const [, setMaskCanvas] = useState(null);
   const [status, setStatus] = useState('idle'); // idle, processing, done, error
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
@@ -20,8 +22,17 @@ const BackgroundRemover = ({
     img.crossOrigin = 'Anonymous';
     img.src = originalImage;
     
+    // Initialize result canvas as well
+    const resultCanvas = resultCanvasRef.current;
+    if (resultCanvas) {
+      const resultCtx = resultCanvas.getContext('2d');
+      resultCtx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+    }
+    
     img.onload = () => {
       const canvas = canvasRef.current;
+      if (!canvas) return;
+      
       const ctx = canvas.getContext('2d');
       
       // Set canvas dimensions to match the image
@@ -30,11 +41,23 @@ const BackgroundRemover = ({
       
       // Draw the original image
       ctx.drawImage(img, 0, 0);
+      
+      // Also initialize the result canvas with the same dimensions
+      if (resultCanvas) {
+        resultCanvas.width = img.width;
+        resultCanvas.height = img.height;
+      }
+    };
+    
+    // Cleanup function
+    return () => {
+      // Cancel any pending operations when component unmounts or image changes
+      img.onload = null;
     };
   }, [originalImage]);
 
   // Function to remove background
-  const removeBackground = async () => {
+  const removeBackground = useCallback(async () => {
     if (!originalImage || status === 'processing') return;
     
     setStatus('processing');
@@ -58,15 +81,21 @@ const BackgroundRemover = ({
       setStatus('error');
       setIsProcessing(false);
     }
-  };
+  }, [originalImage, status, setIsProcessing, onProcessedImage, simulateBackgroundRemoval]);
 
   // Simulate background removal with a delay
-  const simulateBackgroundRemoval = () => {
+  const simulateBackgroundRemoval = useCallback(() => {
     return new Promise((resolve) => {
-      setTimeout(() => {
+      // Create a worker to process the image in a separate thread
+      const processImage = () => {
         // Create a simple mask (this would be replaced by actual ML segmentation)
         const canvas = canvasRef.current;
         const resultCanvas = resultCanvasRef.current;
+        if (!canvas || !resultCanvas) {
+          resolve();
+          return;
+        }
+        
         const ctx = canvas.getContext('2d');
         const resultCtx = resultCanvas.getContext('2d');
         
@@ -102,9 +131,12 @@ const BackgroundRemover = ({
         setMaskCanvas(resultCanvas);
         
         resolve();
-      }, 2000); // Simulate processing time
+      };
+      
+      // Simulate processing delay
+      setTimeout(processImage, 2000);
     });
-  };
+  }, [canvasRef, resultCanvasRef, setMaskCanvas]);
 
   return (
     <div className="background-remover">
@@ -114,11 +146,22 @@ const BackgroundRemover = ({
           onClick={removeBackground}
           disabled={!originalImage || status === 'processing'}
         >
-          {status === 'processing' ? '處理中...' : '移除背景'}
+          {status === 'processing' ? (
+            <>
+              <div className="spinner-small"></div>
+              <span style={{ marginLeft: '8px' }}>處理中...</span>
+            </>
+          ) : (
+            '移除背景'
+          )}
         </button>
         
         {status === 'error' && (
           <div className="error-message">背景移除失敗，請重試</div>
+        )}
+        
+        {status === 'done' && (
+          <div className="success-message">背景移除成功!</div>
         )}
       </div>
       
@@ -131,10 +174,16 @@ const BackgroundRemover = ({
         <div className="result-image">
           <h4>結果</h4>
           <canvas ref={resultCanvasRef} className="bg-canvas"></canvas>
+          {status === 'processing' && (
+            <div className="canvas-processing-overlay">
+              <div className="spinner"></div>
+              <p>正在處理圖片...</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
-};
+});
 
 export default BackgroundRemover;

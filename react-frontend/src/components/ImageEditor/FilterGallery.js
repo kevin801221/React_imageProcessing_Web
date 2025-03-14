@@ -1,7 +1,8 @@
 import React from 'react';
 import './FilterGallery.css';
 
-const FilterGallery = ({ 
+// Using React.memo to prevent unnecessary re-renders
+const FilterGallery = React.memo(({ 
   filters, 
   selectedFilter, 
   onSelectFilter 
@@ -22,6 +23,6 @@ const FilterGallery = ({
       ))}
     </div>
   );
-};
+});
 
 export default FilterGallery;

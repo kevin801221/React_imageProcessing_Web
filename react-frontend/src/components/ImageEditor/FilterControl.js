@@ -1,7 +1,8 @@
 import React from 'react';
 import './FilterControl.css';
 
-const FilterControl = ({ 
+// Using React.memo to prevent unnecessary re-renders
+const FilterControl = React.memo(({ 
   label, 
   value, 
   min, 
@@ -23,6 +24,6 @@ const FilterControl = ({
       </div>
     </div>
   );
-};
+});
 
 export default FilterControl;
