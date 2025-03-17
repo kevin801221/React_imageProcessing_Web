@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback, Suspense, lazy } from 'react';
 import { FaImage, FaRedo, FaSave, FaDownload, FaUndo, FaCrop, FaAdjust, FaCut } from 'react-icons/fa';
 import { MdOutlineColorLens, MdSettings } from 'react-icons/md';
+import './ImageEditorPage.css';
 
 // Lazy load components for better performance
 const ImageCanvas = lazy(() => import('../components/ImageEditor/ImageCanvas'));
 const FilterControl = lazy(() => import('../components/ImageEditor/FilterControl'));
 const FilterGallery = lazy(() => import('../components/ImageEditor/FilterGallery'));
 const BackgroundRemover = lazy(() => import('../components/ImageEditor/BackgroundRemover'));
-import './ImageEditorPage.css';
 
 const ImageEditorPage = () => {
   // Add a loading fallback component

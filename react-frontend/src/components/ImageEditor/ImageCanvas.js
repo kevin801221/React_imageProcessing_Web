@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import './ImageCanvas.css';
 
 // Using React.memo to prevent unnecessary re-renders
@@ -12,23 +12,15 @@ const ImageCanvas = React.memo(({
 }) => {
   // Function to apply corner radius to the canvas
   const applyCornerRadius = useCallback((ctx, radius, width, height) => {
-    if (radius <= 0) return;
+    if (radius <= 0 || width <= 0 || height <= 0) return;
     
     const r = Math.min(width, height) * (radius / 100);
     
-    // Create a temporary canvas
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = width;
-    tempCanvas.height = height;
-    const tempCtx = tempCanvas.getContext('2d');
+    // 直接使用裁剪路徑而不是臨時畫布
+    // 保存當前狀態
+    ctx.save();
     
-    // Copy current canvas to temp canvas
-    tempCtx.drawImage(ctx.canvas, 0, 0);
-    
-    // Clear the original canvas
-    ctx.clearRect(0, 0, width, height);
-    
-    // Create rounded rectangle path
+    // 創建圓角矩形路徑
     ctx.beginPath();
     ctx.moveTo(r, 0);
     ctx.lineTo(width - r, 0);
@@ -41,12 +33,10 @@ const ImageCanvas = React.memo(({
     ctx.quadraticCurveTo(0, 0, r, 0);
     ctx.closePath();
     
-    // Clip to the rounded rectangle
+    // 裁剪到圓角矩形
     ctx.clip();
-    
-    // Draw the image back
-    ctx.drawImage(tempCanvas, 0, 0);
   }, []);
+  
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
 
@@ -57,15 +47,12 @@ const ImageCanvas = React.memo(({
     const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
     const img = imageRef.current;
 
+    // 確保圖像已經加載並且有有效的尺寸
+    if (img.width <= 0 || img.height <= 0) return;
+
     // Set canvas dimensions to match image
     canvas.width = img.width;
     canvas.height = img.height;
-
-    // Create a temporary canvas for better performance
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -85,17 +72,22 @@ const ImageCanvas = React.memo(({
       ctx.filter += ' sepia(70%)';
     }
 
-    // Draw image
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    
     // Apply corner radius if needed
     if (cornerRadius > 0) {
       applyCornerRadius(ctx, cornerRadius, canvas.width, canvas.height);
     }
 
+    // Draw image
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    
+    // 如果應用了圓角，恢復上下文狀態
+    if (cornerRadius > 0) {
+      ctx.restore();
+    }
+
     // Reset filter
     ctx.filter = 'none';
-  }, [filterParams, selectedFilter, transparency]);
+  }, [filterParams, selectedFilter, transparency, cornerRadius, applyCornerRadius]);
 
   useEffect(() => {
     if (!image) return;
@@ -107,10 +99,10 @@ const ImageCanvas = React.memo(({
     const img = new Image();
     img.crossOrigin = 'Anonymous';
     img.src = image;
-    imageRef.current = img;
-
+    
     img.onload = () => {
       if (isMounted) {
+        imageRef.current = img;
         // Use requestAnimationFrame for smoother rendering
         requestAnimationFrame(() => {
           if (isMounted) {
@@ -128,7 +120,7 @@ const ImageCanvas = React.memo(({
   }, [image, renderCanvas]);
 
   useEffect(() => {
-    if (imageRef.current) {
+    if (imageRef.current && imageRef.current.complete && imageRef.current.width > 0) {
       renderCanvas();
     }
   }, [filterParams, selectedFilter, selectedLayout, cornerRadius, transparency, renderCanvas]);
