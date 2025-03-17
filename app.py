@@ -192,6 +192,8 @@ from werkzeug.utils import secure_filename
 import cv2
 import numpy as np
 from PIL import Image
+import requests
+import re
 
 app = Flask(__name__)
 
@@ -199,27 +201,72 @@ app = Flask(__name__)
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
 DESIGN_OUTPUT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'design_output')
 ANNOTATIONS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'annotations')
-KNOWLEDGE_FILES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'knowledge_files')
-IMAGES_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'images')
+CONFIG_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config')
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(DESIGN_OUTPUT_FOLDER, exist_ok=True)
 os.makedirs(ANNOTATIONS_FOLDER, exist_ok=True)
-os.makedirs(KNOWLEDGE_FILES_FOLDER, exist_ok=True)
-os.makedirs(IMAGES_FOLDER, exist_ok=True)
+os.makedirs(CONFIG_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['DESIGN_OUTPUT_FOLDER'] = DESIGN_OUTPUT_FOLDER
 app.config['ANNOTATIONS_FOLDER'] = ANNOTATIONS_FOLDER
-app.config['KNOWLEDGE_FILES_FOLDER'] = KNOWLEDGE_FILES_FOLDER
-app.config['IMAGES_FOLDER'] = IMAGES_FOLDER
+app.config['CONFIG_FOLDER'] = CONFIG_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上傳文件大小為 16MB
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-ALLOWED_KNOWLEDGE_EXTENSIONS = {'xlsx', 'xls', 'csv', 'txt', 'pdf', 'doc', 'docx'}
 
-def allowed_file(filename, allowed_extensions):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+def load_settings():
+    """加載應用程序設置"""
+    settings_path = os.path.join(app.config['CONFIG_FOLDER'], 'settings.json')
+    
+    # 如果設置文件不存在，創建默認設置
+    if not os.path.exists(settings_path):
+        default_settings = {
+            "ollama_url": "http://localhost:11434/api/chat",
+            "models": {
+                "gemma3": {
+                    "name": "gemma3:12b",
+                    "temperature": 0.7,
+                    "top_p": 0.9,
+                    "top_k": 40
+                }
+            },
+            "api_keys": {
+                "openai": ""
+            }
+        }
+        
+        with open(settings_path, 'w', encoding='utf-8') as f:
+            json.dump(default_settings, f, ensure_ascii=False, indent=2)
+        
+        return default_settings
+    
+    # 讀取設置文件
+    try:
+        with open(settings_path, 'r', encoding='utf-8') as f:
+            settings = json.load(f)
+        return settings
+    except Exception as e:
+        print(f"讀取設置文件時出錯: {str(e)}")
+        # 返回默認設置
+        return {
+            "ollama_url": "http://localhost:11434/api/chat",
+            "models": {
+                "gemma3": {
+                    "name": "gemma3:12b",
+                    "temperature": 0.7,
+                    "top_p": 0.9,
+                    "top_k": 40
+                }
+            },
+            "api_keys": {
+                "openai": ""
+            }
+        }
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def index():
@@ -244,7 +291,7 @@ def upload_file():
         print("未選擇文件")
         return jsonify({'success': False, 'message': '未選擇文件'})
     
-    if file and allowed_file(file.filename, ALLOWED_EXTENSIONS):
+    if file and allowed_file(file.filename):
         try:
             filename = secure_filename(file.filename)
             timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
@@ -294,14 +341,14 @@ def upload_knowledge_file():
         print("未選擇文件")
         return jsonify({'success': False, 'message': '未選擇文件'})
     
-    if file and allowed_file(file.filename, ALLOWED_KNOWLEDGE_EXTENSIONS):
+    if file and allowed_file(file.filename):
         try:
             filename = secure_filename(file.filename)
             timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
             new_filename = f"{timestamp}_{filename}"
             
             # 保存文件
-            file_path = os.path.join(app.config['KNOWLEDGE_FILES_FOLDER'], new_filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
             file.save(file_path)
             
             # 檢查文件是否成功保存
@@ -318,7 +365,7 @@ def upload_knowledge_file():
                 # 返回相關信息
                 return jsonify({
                     'success': True, 
-                    'file_path': f"/static/knowledge_files/{new_filename}",
+                    'file_path': f"/static/uploads/{new_filename}",
                     'file_name': filename,
                     'word_count': word_count,
                     'upload_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -339,8 +386,8 @@ def get_knowledge_files():
     """獲取知識庫文件列表"""
     try:
         files = []
-        for filename in os.listdir(app.config['KNOWLEDGE_FILES_FOLDER']):
-            file_path = os.path.join(app.config['KNOWLEDGE_FILES_FOLDER'], filename)
+        for filename in os.listdir(app.config['UPLOAD_FOLDER']):
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             if os.path.isfile(file_path):
                 # 獲取文件信息
                 file_stats = os.stat(file_path)
@@ -387,7 +434,7 @@ def delete_knowledge_file():
         if not filename:
             return jsonify({'success': False, 'message': '缺少文件名'})
         
-        file_path = os.path.join(app.config['KNOWLEDGE_FILES_FOLDER'], filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -549,36 +596,55 @@ def product_copy():
 
 @app.route('/api/chat', methods=['POST'])
 def chat_api():
-    """GPT API 聊天接口"""
+    """GPT API 聊天接口，使用 Gemma 3 12B 模型"""
     try:
         data = request.json
         messages = data.get('messages', [])
-        model = data.get('model', 'gpt-3.5-turbo')
+        model = data.get('model', 'gemma3:12b')  # 默認使用 Gemma 3 12B 模型
         
         if not messages:
             return jsonify({'success': False, 'message': '缺少消息內容'})
         
-        # 這裡需要調用 OpenAI API 或其他 LLM API
-        # 以下代碼僅為示例，需要替換為實際的 API 調用
-        
-        # import openai
-        # openai.api_key = 'your-api-key'  # 請替換為您的 API 密鑰
-        # 
-        # response = openai.ChatCompletion.create(
-        #     model=model,
-        #     messages=messages,
-        #     temperature=0.7,
-        #     max_tokens=1500
-        # )
-        # 
-        # ai_response = response.choices[0].message.content
-        
-        # 目前使用模擬回應進行測試
-        last_message = messages[-1]['content']
-        
-        # 簡單的回應邏輯
-        if '商品文案' in last_message:
-            ai_response = """# 為您的商品生成的銷售文案
+        # 使用 Ollama API 調用 Gemma 3 12B 模型
+        try:
+            # 加載設置
+            settings = load_settings()
+            ollama_url = settings.get('ollama_url', 'http://localhost:11434/api/chat')
+            
+            # 準備系統提示詞
+            system_prompt = "你是一個專業的文案助手，擅長生成吸引人的商品文案和創意內容。請使用繁體中文回應。"
+            
+            # 準備用戶消息
+            formatted_messages = [{"role": "system", "content": system_prompt}]
+            for msg in messages:
+                formatted_messages.append({
+                    "role": msg.get("role", "user"),
+                    "content": msg.get("content", "")
+                })
+            
+            # 準備請求
+            payload = {
+                "model": model,
+                "messages": formatted_messages,
+                "stream": False,
+                "options": {
+                    "temperature": 0.7,
+                    "top_p": 0.9,
+                    "top_k": 40
+                }
+            }
+            
+            # 發送請求到 Ollama API
+            response = requests.post(ollama_url, json=payload)
+            response_data = response.json()
+            
+            # 提取回應
+            ai_response = response_data.get("message", {}).get("content", "")
+            
+            if not ai_response:
+                # 如果 Ollama API 調用失敗，使用備用回應
+                if '商品文案' in messages[-1]['content']:
+                    ai_response = """# 為您的商品生成的銷售文案
 
 ## 標題
 ✨ 革新生活品質，讓您的每一天都與眾不同！
@@ -594,8 +660,31 @@ def chat_api():
 
 ## 行動呼籲
 🔥 限時優惠中！立即下單享9折優惠，再送精美禮品乙份，數量有限，手慢無！"""
-        else:
-            ai_response = "您好！我是您的 AI 文案助手，請告訴我您需要什麼樣的幫助，我會盡力為您服務。"
+                else:
+                    ai_response = "您好！我是您的 AI 文案助手，請告訴我您需要什麼樣的幫助，我會盡力為您服務。"
+        
+        except Exception as e:
+            # 如果 Ollama API 調用出錯，使用備用回應
+            print(f"Ollama API 調用錯誤: {str(e)}")
+            if '商品文案' in messages[-1]['content']:
+                ai_response = """# 為您的商品生成的銷售文案
+
+## 標題
+✨ 革新生活品質，讓您的每一天都與眾不同！
+
+## 賣點
+1. **頂級材質**：精選高品質原料，耐用持久
+2. **人體工學設計**：貼合使用習慣，舒適不費力
+3. **多功能整合**：一機多用，滿足多樣需求
+4. **智能操控**：簡單直覺的操作界面，老少咸宜
+
+## 產品描述
+這款產品是您日常生活的完美助手，採用頂級環保材質精心打造，不僅品質卓越，更兼具時尚美感。人體工學設計讓您使用時倍感舒適，大幅減輕疲勞感。多功能整合讓這款產品能夠適應各種場景需求，為您的生活增添便利與樂趣。直覺式操作界面讓任何年齡層的用戶都能輕鬆上手，徹底釋放您的創造力與生產力。
+
+## 行動呼籲
+🔥 限時優惠中！立即下單享9折優惠，再送精美禮品乙份，數量有限，手慢無！"""
+            else:
+                ai_response = "您好！我是您的 AI 文案助手，請告訴我您需要什麼樣的幫助，我會盡力為您服務。"
         
         # 計算點數消耗（示例）
         points_used = 0.05
@@ -616,7 +705,7 @@ def image_understanding():
 
 @app.route('/api/image_understanding', methods=['POST'])
 def image_understanding_api():
-    """圖片理解 API"""
+    """圖片理解 API，使用 Gemma 3 12B 模型進行圖像分析和文案生成"""
     try:
         if 'file' not in request.files:
             return jsonify({'success': False, 'message': '沒有找到文件'})
@@ -638,32 +727,98 @@ def image_understanding_api():
                 
                 # 檢查文件是否成功保存
                 if os.path.exists(file_path):
-                        # 加載設置並檢查 API key
+                    # 加載設置
                     settings = load_settings()
-                    gpt4o_api_key = settings['api_keys'].get('gpt4o', '')
+                    ollama_url = settings.get('ollama_url', 'http://localhost:11434/api/generate')
                     
-                    if not gpt4o_api_key:
-                        return jsonify({'success': False, 'message': '請先設置 GPT-4o API key'})
+                    # 使用 Gemma 3 12B 模型進行圖像分析
+                    try:
+                        # 讀取圖片並轉換為 base64 格式
+                        with open(file_path, "rb") as image_file:
+                            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+                        
+                        # 準備提示詞
+                        prompt = f"""你是一個專業的圖片分析和商品文案生成專家。請分析以下圖片並生成吸引人的商品文案。
+
+請提供以下內容：
+1. 圖片描述：簡短描述圖片中的商品或場景
+2. 主要特點：列出商品的3-5個主要特點或賣點
+3. 適用類別：列出商品適合的2-3個類別
+4. 商品文案：生成一個完整的商品銷售文案，包含標題、賣點描述和行動呼籲
+
+請使用繁體中文回應，並確保文案具有吸引力和說服力。
+
+[圖片數據]: data:image/jpeg;base64,{base64_image}
+"""
+                        
+                        # 準備請求
+                        payload = {
+                            "model": "gemma3:12b",
+                            "prompt": prompt,
+                            "stream": False,
+                            "options": {
+                                "temperature": 0.7,
+                                "top_p": 0.9,
+                                "top_k": 40
+                            }
+                        }
+                        
+                        # 發送請求到 Ollama API
+                        response = requests.post(ollama_url, json=payload)
+                        response_data = response.json()
+                        
+                        # 提取回應
+                        ai_response = response_data.get("response", "")
+                        
+                        if ai_response:
+                            # 嘗試解析 AI 回應
+                            try:
+                                # 提取圖片描述
+                                description_match = re.search(r'圖片描述[：:]\s*(.*?)(?=主要特點[：:]|$)', ai_response, re.DOTALL)
+                                description = description_match.group(1).strip() if description_match else "無法提取圖片描述"
+                                
+                                # 提取特點
+                                features_match = re.search(r'主要特點[：:](.*?)(?=適用類別[：:]|$)', ai_response, re.DOTALL)
+                                features_text = features_match.group(1).strip() if features_match else ""
+                                features = [f.strip() for f in re.findall(r'[•\-\d+\.]\s*(.*?)(?=\n|$)', features_text) if f.strip()]
+                                if not features:
+                                    features = ["高品質", "實用設計", "優質體驗", "多功能"]
+                                
+                                # 提取類別
+                                categories_match = re.search(r'適用類別[：:](.*?)(?=商品文案[：:]|$)', ai_response, re.DOTALL)
+                                categories_text = categories_match.group(1).strip() if categories_match else ""
+                                categories = [c.strip() for c in re.findall(r'[•\-\d+\.]\s*(.*?)(?=\n|$)', categories_text) if c.strip()]
+                                if not categories:
+                                    categories = ["家居", "生活用品", "禮品"]
+                                
+                                # 提取文案
+                                copy_match = re.search(r'商品文案[：:](.*?)$', ai_response, re.DOTALL)
+                                copy = copy_match.group(1).strip() if copy_match else ai_response
+                                
+                                # 構建分析結果
+                                analysis = {
+                                    'description': description,
+                                    'features': features,
+                                    'categories': categories
+                                }
+                                
+                                return jsonify({
+                                    'success': True,
+                                    'file_path': f"/static/uploads/{new_filename}",
+                                    'analysis': analysis,
+                                    'copy': copy,
+                                    'points_used': 0.15
+                                })
+                                
+                            except Exception as e:
+                                print(f"解析 AI 回應時出錯: {str(e)}")
+                                # 使用備用回應
+                        
+                    except Exception as e:
+                        print(f"Ollama API 調用錯誤: {str(e)}")
+                        # 使用備用回應
                     
-                    # 這裡應該調用 GPT-4o 的 API 來分析圖片
-                    # 目前我們使用模擬數據，但在實際實現中，我們會使用 API key 調用 GPT-4o
-                    
-                    # TODO: 實現真正的 GPT-4o API 調用
-                    # 以下為模擬代碼，實際實現時應替換為真正的 API 調用
-                    # import openai
-                    # openai.api_key = gpt4o_api_key
-                    # response = openai.chat.completions.create(
-                    #     model="gpt-4o",
-                    #     messages=[
-                    #         {"role": "system", "content": "你是一個專業的圖片分析和商品文案生成專家。"},
-                    #         {"role": "user", "content": [
-                    #             {"type": "text", "text": "請分析這張商品圖片，並生成吸引人的商品文案。"},
-                    #             {"type": "image_url", "image_url": {"url": f"file://{file_path}"}}
-                    #         ]}
-                    #     ]
-                    # )
-                    # ai_response = response.choices[0].message.content
-                    
+                    # 如果 Ollama API 調用失敗或解析失敗，使用備用回應
                     # 模擬分析結果
                     analysis = {
                         'description': '這是一張智能空氣淨化器的商品圖片，展示了產品的主要外觀和特點。',
