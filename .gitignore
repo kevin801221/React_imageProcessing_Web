@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+image_env/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.env
+.env.*
+
+# Node
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# React build
+react-frontend/build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Application specific
+uploads/
+processed/
+exports/
+*.log

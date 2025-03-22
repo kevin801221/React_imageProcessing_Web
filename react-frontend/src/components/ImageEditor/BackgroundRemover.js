@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './BackgroundRemover.css';
+import imageProcessingService from '../../services/imageProcessingService';
 
 const BackgroundRemover = ({ 
   originalImage, 
@@ -7,10 +8,12 @@ const BackgroundRemover = ({
   isProcessing,
   setIsProcessing
 }) => {
-  const [maskCanvas, setMaskCanvas] = useState(null);
   const [status, setStatus] = useState('idle'); // idle, processing, done, error
+  const [errorMessage, setErrorMessage] = useState('');
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
+  const [originalImageFile, setOriginalImageFile] = useState(null);
+  const [threshold, setThreshold] = useState(30); // 背景移除閾值參數
 
   // Initialize canvas when the component mounts
   useEffect(() => {
@@ -30,87 +33,98 @@ const BackgroundRemover = ({
       
       // Draw the original image
       ctx.drawImage(img, 0, 0);
+      
+      // Convert base64 to file object for API calls
+      fetch(originalImage)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], 'image.png', { type: 'image/png' });
+          setOriginalImageFile(file);
+        })
+        .catch(err => {
+          console.error('Error converting image to file:', err);
+        });
     };
   }, [originalImage]);
 
   // Function to remove background
   const removeBackground = async () => {
-    if (!originalImage || status === 'processing') return;
+    if (!originalImageFile || status === 'processing') return;
     
     setStatus('processing');
     setIsProcessing(true);
+    setErrorMessage('');
     
     try {
-      // In a real implementation, you would use a machine learning model or API
-      // to segment the image and create a mask. For now, we'll simulate it.
-      await simulateBackgroundRemoval();
+      // 使用圖像處理服務移除背景，並傳遞閾值參數
+      const result = await imageProcessingService.removeBackground(originalImageFile, {
+        threshold: threshold
+      });
       
-      setStatus('done');
-      setIsProcessing(false);
-      
-      // If we have a result, pass it back to the parent component
-      if (resultCanvasRef.current) {
-        const dataURL = resultCanvasRef.current.toDataURL('image/png');
-        onProcessedImage(dataURL);
+      if (result.success) {
+        setStatus('done');
+        
+        // 顯示處理後的圖像
+        const processedImg = new Image();
+        processedImg.crossOrigin = 'Anonymous';
+        processedImg.src = result.processedImage;
+        
+        processedImg.onload = () => {
+          const resultCanvas = resultCanvasRef.current;
+          const resultCtx = resultCanvas.getContext('2d');
+          
+          // 設置畫布尺寸
+          resultCanvas.width = processedImg.width;
+          resultCanvas.height = processedImg.height;
+          
+          // 繪製處理後的圖像
+          resultCtx.drawImage(processedImg, 0, 0);
+          
+          // 將處理後的圖像傳回父組件
+          onProcessedImage(result.processedImage);
+        };
+      } else {
+        setStatus('error');
+        setErrorMessage(result.message || '背景移除失敗');
       }
     } catch (error) {
       console.error('Error removing background:', error);
       setStatus('error');
+      setErrorMessage('處理圖像時發生錯誤');
+    } finally {
       setIsProcessing(false);
     }
   };
 
-  // Simulate background removal with a delay
-  const simulateBackgroundRemoval = () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Create a simple mask (this would be replaced by actual ML segmentation)
-        const canvas = canvasRef.current;
-        const resultCanvas = resultCanvasRef.current;
-        const ctx = canvas.getContext('2d');
-        const resultCtx = resultCanvas.getContext('2d');
-        
-        // Set result canvas dimensions
-        resultCanvas.width = canvas.width;
-        resultCanvas.height = canvas.height;
-        
-        // Get image data
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        
-        // Create a simple mask (in a real implementation, this would be from ML model)
-        // For demonstration, we'll just make a simple threshold based on color
-        for (let i = 0; i < data.length; i += 4) {
-          // Simple threshold - in real implementation this would be ML-based
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          
-          // Simple heuristic: if pixel is close to blue (for the blue containers)
-          // or has high brightness, keep it; otherwise make transparent
-          const isProduct = (b > r + 50 && b > g + 50) || (r + g + b > 600);
-          
-          if (!isProduct) {
-            data[i + 3] = 0; // Set alpha to 0 (transparent)
-          }
-        }
-        
-        // Draw the processed image with transparent background
-        resultCtx.putImageData(imageData, 0, 0);
-        
-        // Store the mask canvas for future reference
-        setMaskCanvas(resultCanvas);
-        
-        resolve();
-      }, 2000); // Simulate processing time
-    });
+  // 處理閾值變更
+  const handleThresholdChange = (e) => {
+    setThreshold(parseInt(e.target.value, 10));
   };
 
   return (
     <div className="background-remover">
-      <div className="remover-controls">
+      <div className="canvas-container">
+        <canvas ref={canvasRef} className="original-canvas"></canvas>
+        <canvas ref={resultCanvasRef} className="result-canvas"></canvas>
+      </div>
+      
+      <div className="controls">
+        <div className="parameter-controls">
+          <div className="parameter-control">
+            <label>閾值: {threshold}</label>
+            <input 
+              type="range" 
+              min="5" 
+              max="100" 
+              value={threshold} 
+              onChange={handleThresholdChange} 
+            />
+            <span className="parameter-value">{threshold}</span>
+          </div>
+        </div>
+        
         <button 
-          className="remove-bg-button" 
+          className="remove-bg-btn"
           onClick={removeBackground}
           disabled={!originalImage || status === 'processing'}
         >
@@ -118,20 +132,10 @@ const BackgroundRemover = ({
         </button>
         
         {status === 'error' && (
-          <div className="error-message">背景移除失敗，請重試</div>
+          <div className="error-message">
+            {errorMessage || '背景移除失敗，請重試'}
+          </div>
         )}
-      </div>
-      
-      <div className="canvas-container">
-        <div className="original-image">
-          <h4>原圖</h4>
-          <canvas ref={canvasRef} className="bg-canvas"></canvas>
-        </div>
-        
-        <div className="result-image">
-          <h4>結果</h4>
-          <canvas ref={resultCanvasRef} className="bg-canvas"></canvas>
-        </div>
       </div>
     </div>
   );
