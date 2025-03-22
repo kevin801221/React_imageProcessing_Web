@@ -65,11 +65,15 @@
 
 .sidebar-tabs {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  overflow-y: visible;
+  max-height: none;
   border-bottom: 1px solid #e0e0e0;
 }
 
 .tab-button {
-  flex: 1;
+  flex: 0 0 auto;
   padding: 10px 5px;
   background: none;
   border: none;
@@ -95,6 +99,13 @@
 
 .tab-button:hover {
   background-color: #f9f9f9;
+}
+
+.tab-button[data-tab="畫筆"],
+.tab-button[data-tab="旋轉"] {
+  display: flex;
+  align-items: center;
+  padding: 10px;
 }
 
 .sidebar-content {

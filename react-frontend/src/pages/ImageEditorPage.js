@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FaImage, FaRedo, FaSave, FaDownload, FaUndo, FaCrop, FaAdjust, FaCut } from 'react-icons/fa';
+import { FaImage, FaRedo, FaSave, FaDownload, FaUndo, FaCrop, FaAdjust, FaCut, FaPencilAlt, FaSync } from 'react-icons/fa';
 import { MdOutlineColorLens, MdSettings } from 'react-icons/md';
 import ImageCanvas from '../components/ImageEditor/ImageCanvas';
 import FilterControl from '../components/ImageEditor/FilterControl';
 import FilterGallery from '../components/ImageEditor/FilterGallery';
 import BackgroundRemover from '../components/ImageEditor/BackgroundRemover';
+import Cropper from '../components/ImageEditor/Cropper';
+import DrawingTool from '../components/ImageEditor/DrawingTool';
+import ImageRotator from '../components/ImageEditor/ImageRotator';
 import './ImageEditorPage.css';
 
 const ImageEditorPage = () => {
@@ -91,8 +94,6 @@ const ImageEditorPage = () => {
     }));
   };
 
-
-
   const handleReset = () => {
     setFilterParams({
       brightness: 0,
@@ -142,52 +143,33 @@ const ImageEditorPage = () => {
     switch (activeTab) {
       case '比例':
         return (
-          <div className="filter-controls">
-            <div className="filter-section">
-              <FilterControl 
-                label="亮度" 
-                value={filterParams.brightness} 
-                min="-100" 
-                max="100" 
-                onChange={(value) => handleFilterChange('brightness', value)} 
-              />
-              <FilterControl 
-                label="對比度" 
-                value={filterParams.contrast} 
-                min="-100" 
-                max="100" 
-                onChange={(value) => handleFilterChange('contrast', value)} 
-              />
-              <FilterControl 
-                label="飽和度" 
-                value={filterParams.saturation} 
-                min="-100" 
-                max="100" 
-                onChange={(value) => handleFilterChange('saturation', value)} 
-              />
-              <FilterControl 
-                label="不透明度" 
-                value={filterParams.opacity} 
-                min="0" 
-                max="100" 
-                onChange={(value) => handleFilterChange('opacity', value)} 
-              />
-              <FilterControl 
-                label="銳利度" 
-                value={filterParams.sharpness} 
-                min="-100" 
-                max="100" 
-                onChange={(value) => handleFilterChange('sharpness', value)} 
-              />
-              <FilterControl 
-                label="白平衡" 
-                value={filterParams.whiteBalance} 
-                min="-100" 
-                max="100" 
-                onChange={(value) => handleFilterChange('whiteBalance', value)} 
-              />
+          <div className="layout-controls">
+            <div className="layout-options">
+              <button 
+                className={`layout-option ${selectedLayout === '北歐' ? 'active' : ''}`}
+                onClick={() => setSelectedLayout('北歐')}
+              >
+                北歐
+              </button>
+              <button 
+                className={`layout-option ${selectedLayout === '簡約' ? 'active' : ''}`}
+                onClick={() => setSelectedLayout('簡約')}
+              >
+                簡約
+              </button>
+              <button 
+                className={`layout-option ${selectedLayout === '時尚' ? 'active' : ''}`}
+                onClick={() => setSelectedLayout('時尚')}
+              >
+                時尚
+              </button>
+              <button 
+                className={`layout-option ${selectedLayout === '復古' ? 'active' : ''}`}
+                onClick={() => setSelectedLayout('復古')}
+              >
+                復古
+              </button>
             </div>
-            <button className="reset-button" onClick={handleReset}>重新調整</button>
           </div>
         );
       case '濾鏡':
@@ -204,18 +186,12 @@ const ImageEditorPage = () => {
         );
       case '剪裁':
         return (
-          <div className="crop-controls">
-            <div className="crop-options">
-              <button className="crop-option">1:1</button>
-              <button className="crop-option">4:3</button>
-              <button className="crop-option">16:9</button>
-              <button className="crop-option">自由</button>
-            </div>
-            <div className="crop-actions">
-              <button className="crop-action">套用</button>
-              <button className="crop-action">取消</button>
-            </div>
-          </div>
+          <Cropper 
+            originalImage={image}
+            onProcessedImage={handleProcessedImage}
+            isProcessing={isProcessing}
+            setIsProcessing={setIsProcessing}
+          />
         );
       case '調整':
         return (
@@ -245,6 +221,20 @@ const ImageEditorPage = () => {
             onProcessedImage={handleProcessedImage}
             isProcessing={isProcessing}
             setIsProcessing={setIsProcessing}
+          />
+        );
+      case '畫筆':
+        return (
+          <DrawingTool 
+            originalImage={image}
+            onProcessedImage={handleProcessedImage}
+          />
+        );
+      case '旋轉':
+        return (
+          <ImageRotator 
+            originalImage={image}
+            onProcessedImage={handleProcessedImage}
           />
         );
       default:
@@ -320,6 +310,22 @@ const ImageEditorPage = () => {
                 <FaCut />
                 <span>背景移除</span>
               </button>
+              <button 
+                className={`tab-button ${activeTab === '畫筆' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('畫筆')}
+                data-tab="畫筆"
+              >
+                <FaPencilAlt />
+                <span>畫筆</span>
+              </button>
+              <button 
+                className={`tab-button ${activeTab === '旋轉' ? 'active' : ''}`} 
+                onClick={() => setActiveTab('旋轉')}
+                data-tab="旋轉"
+              >
+                <FaSync />
+                <span>旋轉</span>
+              </button>
             </div>
             
             <div className="sidebar-content">
@@ -373,30 +379,22 @@ const ImageEditorPage = () => {
                       <div>處理中...</div>
                     </div>
                   )}
-                  {error && (
-                    <div className="canvas-error">
-                      <div>{error}</div>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
+            
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
           </div>
-          
-          <div className="editor-sidebar right-sidebar">
-            <div className="filter-gallery-container">
-              <h3>濾鏡</h3>
-              <FilterGallery 
-                filters={[
-                  { id: '無', label: '原圖' },
-                  { id: '北歐', label: '北歐', previewClass: 'filter-nordic' },
-                  { id: '懷舊', label: '懷舊', previewClass: 'filter-vintage' }
-                ]}
-                selectedFilter={selectedFilter}
-                onSelectFilter={setSelectedFilter}
-              />
-            </div>
-          </div>
+        </div>
+        
+        <div className="editor-footer">
+          <button className="reset-button" onClick={handleReset}>
+            重置
+          </button>
         </div>
       </div>
     </div>
